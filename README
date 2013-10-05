@@ -1,0 +1,96 @@
+Amanda snapshot layers script
+=============================
+
+This is a python language script plugin for Amanda to handle backing
+up an unmounted device that may need to have a snapshot taken, and may
+have other layers within, such as RAID or partitions.
+
+It was created for our shop's use case, to back up virtual machine
+data volumes, which can contain many layers.  The device with the
+filesystem may or not be a partition on a larger device.  That device,
+in turn, may be a software RAID1 device.  The md component devices are
+accessed over iSCSI whose LVM-backed targets live on a physical host.
+
+The goal was to run amandad on that physical host and back up snapshots
+of the logical volumes rather than run amandad on each VM.  The
+intended advantages are:
+
+- backups based on a snapshot from a single point in time, with
+  integrity similar to a power loss scenario
+
+- simultaneous backups on multiple VMs won't hammer a single spindle
+  (this author was unfamiliar with Amanda and didn't correctly
+  understand the 'spindle' field in the disklist file)
+
+- amandad only needs to be set up on a few physical hosts rather than
+  scores of virtual machines
+
+Overview
+========
+
+The script uses Amanda's script API [1].  It should be copied into
+Amanda's application directory with mode 0755.  Zmanda's RPMs locate
+this in /usr/libexec/amanda/application.
+
+The script contains a number of Python classes:  some utility classes and
+one class per layer type (e.g. RAID1, LVM, filesystem mount).  The
+layers are intended to arbitrarily stackable, although not all
+combinations are tested.
+
+The Amanda user, 'amandabackup' in Zmanda's RPMs, needs root access to
+a few commands for manipulating LVM snapshots and RAID devices, and
+for mounting those.  The example amandabackup.sudoers file tries to
+keep privileges restricted as much as possible by allowing only
+certain forms of commands and allowing only certain arguments.  For
+example, the LVM commands only allow removing LVs matching
+'/dev/*.amsnap', where '.amsnap' is the string added to LV names to
+denote an LV snapshot intended for Amanda's use.  For another example
+where the host's root filesystem is on /dev/md0, the example sudoers
+file only allows mdadm to manipulate devices md1 through md9 to
+prevent accidents.
+
+The example amanda.conf fragment shows the 'script-tool' definition
+that sets up the script arguments.  For a full list of arguments, run
+"./script-snap-layers --help".
+
+The sample disklist demonstrates how the layers are encoded into the
+'device' field; dumps are assumed to be gtar dumps, so this is a mount
+point that is dynamically created under the '/v/amsnap' directory.
+The script's usage output describes the encoding:
+
+    <mount_base>/(lvm=<vg+lv>|raid1|part=<part#>)[,<...>]/
+
+Walkthrough of disklist entry run
+=================================
+
+The first disklist entry is a volume on host0, given the name 'vm0.d0'
+(signifying VM #0, data partition #0 in this example).  It exists as
+a LVM logical volume containing a RAID-1 md device component
+containing partition #1, the target data volume.
+
+When amandad runs any of the amcheck, estimate or backup actions, the
+script will be called first with 'pre-dle-<action>' as an argument,
+and the script will know to set up the stack.  First, an LVM snapshot
+of '/dev/data0/vol00' will be created as '/dev/data0/vol00.amsnap'
+(the extension is hardcoded in the script).  The snapshot contains a
+RAID 1 component device, which will then will be assembled into the
+first available /dev/md device in degraded mode.  (There is currently
+no means to encode multiple component devices into the device field.)
+Finally, the directory /v/amsnap/lvm=data0+vol00,raid1,part=1 will be
+created and partition 1 of the md device mounted onto it.  At this
+point, the script is finished setting up, and Amanda will continue
+running its action.
+
+When Amanda is finished running its action, it will call the script
+again, this time with the argument 'post-dle-<action>'.  The script
+tear down the stack, in the reverse order of set-up mode.  It will:
+unmount the md device and remove the mount directory; stop the md
+device; and remove the LVM snapshot.
+
+At all times, the script makes as many sanity checks as possible, and
+if anything strange is found, the script exits with an error.
+
+Links
+=====
+
+[1] http://wiki.zmanda.com/index.php/Script_API

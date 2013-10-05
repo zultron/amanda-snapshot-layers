@@ -1,0 +1,22 @@
+##############
+# Commands for backup snapshot administration
+#
+# create or remove LVMs that look like snapshots; display LVMs
+Cmnd_Alias LVMSNAP = /usr/sbin/lvcreate -s -n *.amsnap -L [0-9]* /dev/*,\
+	/usr/sbin/lvremove -f /dev/*.amsnap,\
+	/usr/sbin/lvdisplay, /usr/sbin/lvs
+
+# Administer RAID devices other than md0 (the root fs device!) and examine
+# RAID superblocks
+Cmnd_Alias RAIDSNAP = /sbin/mdadm -Q --examine /dev/*,\
+	/sbin/mdadm -Q /dev/*,\
+	/sbin/mdadm -[AD] /dev/md[1-9] *,\
+	/sbin/mdadm -[SoD] /dev/md[1-9]
+
+Cmnd_Alias MOUNTSNAP = \
+	/bin/mkdir /v/amanda.mount/*,\
+	/bin/rmdir /v/amanda.mount/?*,\
+	/bin/mount -r /dev/md[1-9]* *,\
+	/bin/umount /v/amanda.mount/*
+
+amandabackup	ALL = NOPASSWD: LVMSNAP, RAIDSNAP, MOUNTSNAP

@@ -1,0 +1,15 @@
+# host	vol	device = mount point			dumptype	spindle
+#   small filesystems, lvm+raid+partition
+host0	vm0.d0	/v/amsnap/lvm=data0+vol00,raid1,part=1	lv-small	0
+host0	vm0.d0	/v/amsnap/lvm=data0+vol00,raid1,part=2	lv-small	0
+host0	vm1.d0	/v/amsnap/lvm=data1+vol00,raid1,part=1	lv-small	1
+#   small filesystems, lvm+raid; no partition
+host0	vm2.d2	/v/amsnap/lvm=data1+vol03,raid1		lv-small	1
+#   medium filesystems 1G - 10G, lvm+raid+partition
+host0	vm0.d1	/v/amsnap/lvm=data0+vol01,raid1,part=1	lv-medium	0
+host0	vm1.d2	/v/amsnap/lvm=data0+vol04,raid1,part=1	lv-medium	0
+host0	vm2.d0	/v/amsnap/lvm=data1+vol02,raid1,part=1	lv-medium	1
+#   large filesystems 10G - 100G, lvm+raid, no partition
+host0	vm0.d1	/v/amsnap/lvm=data0+vol02,raid1		lv-large	0
+host0	vm2.d1	/v/amsnap/lvm=data0+vol03,raid1		lv-large	0
+host0	vm2.d3	/v/amsnap/lvm=data1+vol01,raid1		lv-large	1
