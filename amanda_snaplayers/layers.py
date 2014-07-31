@@ -21,6 +21,10 @@ Params.add_option(
     "--snaplayers_state_file", "--snaplayers-state-file",
     default='/var/lib/amanda/snaplayers.db',
     help=("location of snaplayers state file"))
+Params.add_option(
+    "--snap_suffix", "--snap-suffix",
+    default='.amsnap',
+    help=("snapshot suffix"))
 
 
 def _unimplemented(method):

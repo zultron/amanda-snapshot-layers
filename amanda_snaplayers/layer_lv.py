@@ -7,7 +7,6 @@ class LV(SnapLayer):
     lvcreate = '/usr/sbin/lvcreate'
     lvremove = '/usr/sbin/lvremove'
     lvdisplay = '/usr/sbin/lvdisplay'
-    snap_suffix = '.amsnap'
     name = 'lv'
 
     @property
@@ -24,7 +23,7 @@ class LV(SnapLayer):
 
     @property
     def device(self):
-        return self.orig_device + self.snap_suffix
+        return self.orig_device + self.params.snap_suffix
 
     @property
     def snap_exists(self):
