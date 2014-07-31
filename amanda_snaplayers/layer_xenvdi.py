@@ -1,7 +1,7 @@
 # Xen VDI snapshots
 
 from stack import Stack
-from layers import Snapper
+from layer_lv import Snapper
 
 have_xenserver = True
 try:
