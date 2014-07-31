@@ -11,12 +11,11 @@ LOG_FILE_PAT = '/var/log/amanda/amandad/lvsnap.' \
 
 class Params(object):
 
-    required_params = ['stale_seconds', 'mount_base', 'size', 'device']
+    required_params = ['mount_base', 'device']
     optional_params = ['debug', 'log_to_stdout', 'config', 'host', 'disk',
                        'layer_param_field_sep', 'level', 'execute_where']
-    all_params = required_params + optional_params
-    interesting_params = ['device', 'disk', 'stale_seconds', 'mount_base',
-                          'size', 'debug', 'log_to_stdout',
+    interesting_params = ['device', 'disk', 'mount_base',
+                          'debug', 'log_to_stdout',
                           'layer_param_field_sep']
 
     # Make this a class property so other modules can add options
@@ -28,6 +27,33 @@ class Params(object):
             "https://github.com/zultron/amanda-snapshot-layers " \
             "for more information"
         )
+
+    @property
+    def all_params(self):
+        return self.required_params + self.optional_params
+
+    @classmethod
+    def add_option(cls, *args, 
+                   **kwargs):
+        """
+        Add a command-line option.
+
+        Arguments are passed directly to 'OptionParser.add_option()',
+        except 'required_param' (default False) and
+        'interesting_param' (default True).
+        """
+        required_param = kwargs.pop('required_param',False)
+        interesting_param = kwargs.pop('interesting_param',True)
+
+        opt = cls.options.add_option(*args,**kwargs)
+
+        if required_param:
+            cls.required_params.append(opt.dest)
+        else:
+            cls.optional_params.append(opt.dest)
+        if interesting_param:
+            cls.interesting_params.append(opt.dest)
+
 
     def __init__(self,
                  set_up_entry_points,

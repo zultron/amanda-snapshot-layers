@@ -8,7 +8,7 @@ from params import Params
 
 
 # Mount parameters
-Params.options.add_option(
+Params.add_option(
     "--no_auto_mount", "--no-auto-mount",
     help=("don't automatically try to automount the final device; "
           "mount must be specified explicitly"))

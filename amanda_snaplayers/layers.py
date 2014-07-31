@@ -9,11 +9,13 @@ from params import Params
 
 
 # Snapshot parameters
-Params.options.add_option(
+Params.add_option(
     "--stale_seconds", "--stale-seconds", type="int",
+    required_param=True, interesting_param=True,
     help=("number of seconds before a snapshot is considered stale"))
-Params.options.add_option(
+Params.add_option(
     "--size",
+    required_param=True, interesting_param=True,
     help=("size of snapshot; see lvcreate(8) for units"))
 
 
