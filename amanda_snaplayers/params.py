@@ -4,6 +4,11 @@ from optparse import OptionParser
 from time import localtime, strftime
 from util import Util
 
+# Default log file pattern
+LOG_FILE_PAT = '/var/log/amanda/amandad/lvsnap.' \
+    '%(timestamp)s.%(disk)s.%(entry_point)s.debug'
+
+
 class Params(object):
 
     required_params = ['stale_seconds', 'mount_base', 'size', 'device']
@@ -59,6 +64,10 @@ class Params(object):
             default=',=+',
             help=("separator charactors for layers, params and fields "
                   "(default ',=+')"))
+        self.options.add_option(
+            "--snaplayers_log_pattern", "--snaplayers-log-pattern",
+            default=LOG_FILE_PAT,
+            help=("snapshot log file pattern; default: %s" % LOG_FILE_PAT))
 
         # standard properties
         self.options.add_option(
@@ -165,8 +174,9 @@ class Params(object):
 
     @property
     def logfile(self):
-        return '/var/log/amanda/amandad/lvsnap.%s.%s.%s.debug' % \
-               (strftime("%Y%m%d%H%M%S", localtime()),
-                self.params.disk, self.entry_point)
-
+        return self.params.snaplayers_log_pattern % \
+               { 'timestamp' : strftime("%Y%m%d%H%M%S", localtime()),
+                 'disk' : self.params.disk,
+                 'entry_point' : self.entry_point,
+                 }
 
