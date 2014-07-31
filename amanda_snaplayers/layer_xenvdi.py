@@ -66,4 +66,4 @@ class XenVDISnapLayer(LV):
 
 # Register this layer
 if have_xenserver:
-    Stack.register_layer('xenvdi',XenVDISnapLayer)
+    Stack.register_layer(XenVDISnapLayer)

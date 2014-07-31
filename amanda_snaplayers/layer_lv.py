@@ -8,7 +8,7 @@ class LV(SnapLayer):
     lvremove = '/usr/sbin/lvremove'
     lvdisplay = '/usr/sbin/lvdisplay'
     snap_suffix = '.amsnap'
-    name = 'lvm'
+    name = 'lv'
 
     @property
     def vg_name(self):
@@ -64,4 +64,4 @@ class LV(SnapLayer):
 
         self.infomsg("  Ran 'lvremove' command")
 
-Stack.register_layer('lv',LV)
+Stack.register_layer(LV)

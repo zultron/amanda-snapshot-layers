@@ -249,4 +249,4 @@ class Mount(Layer):
 
 
 # Register this layer
-Stack.register_layer('mount',Mount)
+Stack.register_layer(Mount)

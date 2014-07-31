@@ -13,7 +13,7 @@ class MD_component_device(Layer):
     degraded mode (half device) for backups
     '''
 
-    name = 'raid1'
+    name = 'md'
     mdadm = '/sbin/mdadm'
     raid1_re = re.compile(r' level=raid1 ')
     uuid_re = re.compile(r'UUID=([0-9a-f:]+)')
@@ -268,4 +268,4 @@ class MD_component_device(Layer):
         self.dev_db = None
 
 # Register this layer
-Stack.register_layer('md',MD_component_device)
+Stack.register_layer(MD_component_device)

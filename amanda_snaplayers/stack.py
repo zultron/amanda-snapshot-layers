@@ -7,8 +7,8 @@ class Stack(Util):
     dispatch_hash = {}
 
     @classmethod
-    def register_layer(my_class,name,layer_class):
-        my_class.dispatch_hash[name] = layer_class
+    def register_layer(my_class,layer_class):
+        my_class.dispatch_hash[layer_class.name] = layer_class
 
     def __init__(self,params,debug=None):
         # set up utils; we expect logging to already be set up from 'params'
