@@ -1,0 +1,117 @@
+#!/usr/bin/python
+#
+# /path/to/script [execute-on]+ [--config <config>] [--host <host>] \
+#    [--disk <disk>] [--device <device>] [--level]* \
+#    [--PROPERTY_NAME PROPERTY_VALUE]*
+
+# /usr/libexec/amanda/application/script_lvsnap script_lvsnap
+# PRE-DLE-AMCHECK --execute-where client --config site0-full --host
+# xen0.storage0.zultron.com --disk
+# /dev/data.00.0/norman.00.0.mail.amsnap --device
+# /dev/data.00.0/norman.00.0.mail.amsnap --stale-seconds 86400
+# --snap-suffix .amsnap
+
+# /usr/libexec/amanda/application/script_lvsnap
+# script_lvsnap POST-DLE-AMCHECK
+# --execute-where client
+# --config site0-full
+# --host xen0.storage0.zultron.com
+# --disk /dev/data.00.0/norman.00.0.mail.amsnap
+# --device /dev/data.00.0/norman.00.0.mail.amsnap
+# --stale-seconds 86400
+# --snap-suffix .amsnap
+
+import sys, os.path
+
+# FIXME:  use this while developing
+#
+# Assume that the amanda-snaplayers libs are in the same directory as
+# this script
+sys.path.append(os.path.dirname(__file__))
+
+from amanda_snaplayers import Params,Stack
+
+
+set_up_entry_points = ['pre-dle-amcheck', 'pre-dle-estimate',
+                       'pre-dle-backup']
+tear_down_entry_points = ['post-dle-amcheck', 'post-dle-estimate',
+                          'post-dle-backup']
+
+
+def main():
+
+    # command line option processing
+    params = Params(set_up_entry_points,
+                    tear_down_entry_points)
+
+    # print debug info
+    if params.debug:
+        params.print_params()
+
+    # pull util object out for easy access
+    util = params.util
+
+    # set up stack object
+    stack = Stack(params)
+
+    # setting up
+    if params.set_up_mode:
+        util.infomsg("\nEntry point = %s; set-up mode\n" % params.entry_point)
+        # check the stack
+        stack.check()
+        if not stack.is_setup:
+            if stack.is_torn_down:
+                util.infomsg("Stack not set up\n")
+            else:
+                util.infomsg("Stack partially set up to %s; tearing down\n" %
+                         stack.top_set_up_layer.name)
+                # tear it down
+                stack.tear_down()
+                # confirm torn down
+                if not stack.is_torn_down:
+                    util.error("Stack not torn down; aborting")
+                util.infomsg("Successfully tore down partially set up stack; "
+                             "rechecking\n")
+                stack.check()
+        elif stack.is_stale:
+            util.infomsg("Stack is stale; tearing down\n")
+            stack.tear_down()
+            # tear it down; confirm torn down
+            if not stack.is_torn_down:
+                util.error("Stack not torn down; aborting")
+            util.infomsg("Successfully tore down stale stack; rechecking\n")
+            stack.check()
+        else:
+            util.infomsg("Stack is set up; nothing to do")
+            sys.exit(0)
+
+        # Set up stack
+        stack.set_up()
+
+        util.infomsg("Successfully set up stack")
+        sys.exit(0)
+
+    elif params.tear_down_mode:
+        util.infomsg("\nEntry point = %s; tear-down mode\n" %
+                     params.entry_point)
+        # check the stack
+        stack.check()
+
+        # if stack is set up, tear it down
+        if not stack.is_torn_down:
+            if stack.is_setup:
+                util.infomsg("Stack is set up; tearing down\n")
+            else:
+                util.infomsg("Stack partially set up to %s layer; "
+                             "tearing down" % stack.top_set_up_layer.name)
+            stack.tear_down()
+            
+        util.infomsg("Successfully tore down stack\n")
+    else:
+        util.error("Unable to determine what to do.  Aborting.")
+
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()

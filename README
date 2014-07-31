@@ -51,7 +51,7 @@ prevent accidents.
 
 The example amanda.conf fragment shows the 'script-tool' definition
 that sets up the script arguments.  For a full list of arguments, run
-"./script-snap-layers --help".
+"./script-snaplayers --help".
 
 The sample disklist demonstrates how the layers are encoded into the
 'device' field; dumps are assumed to be gtar dumps, so this is a mount
