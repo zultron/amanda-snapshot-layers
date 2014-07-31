@@ -17,6 +17,10 @@ Params.add_option(
     "--size",
     required_param=True, interesting_param=True,
     help=("size of snapshot; see lvcreate(8) for units"))
+Params.add_option(
+    "--snaplayers_state_file", "--snaplayers-state-file",
+    default='/var/lib/amanda/snaplayers.db',
+    help=("location of snaplayers state file"))
 
 
 
@@ -25,25 +29,25 @@ class Snapdb(dict):
     pickled dict of snapshot creation timestamps persisted to a file
     '''
 
-    picklefile = '/var/lib/amanda/lvsnap.db'
     epoch = datetime(1971,01,01)
 
-    def __init__(self,debug=False):
+    def __init__(self,debug=False,state_file=None):
+        self.state_file = state_file
         self.util = Util()
-        if os.path.exists(self.picklefile):
+        if os.path.exists(self.state_file):
             try:
-                self.update(pickle.load(open(self.picklefile, 'r')))
+                self.update(pickle.load(open(self.state_file, 'r')))
             except:
                 self.util.error("Error reading snapshot db '%s': %s" %
-                      (self.picklefile, sys.exc_info()[0]))
+                      (self.state_file, sys.exc_info()[0]))
         self.util.debugmsg("Read pickled DB: %s" % pformat(self))
 
     def save(self):
         try:
-            pickle.dump(self,open(self.picklefile, 'w'))
+            pickle.dump(self,open(self.state_file, 'w'))
         except:
             self.util.error("Error writing snapshot db '%s':\n%s" %
-                            (self.picklefile, sys.exc_info()[0]))
+                            (self.state_file, sys.exc_info()[0]))
 
     def record_snap(self,snap_device):
         self.setdefault(snap_device,{})['timestamp'] = datetime.now()
@@ -129,7 +133,9 @@ class Snapper(Layer):
     @property
     def snapdb(self):
         if self.class_params['snapdb'] is None:
-            self.class_params['snapdb'] = Snapdb(debug = self.debug)
+            self.class_params['snapdb'] = \
+                Snapdb(debug = self.debug,
+                       state_file = self.params.state_file)
         return self.class_params['snapdb']
 
     @property
