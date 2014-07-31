@@ -1,8 +1,18 @@
 # Mount a volume
 
 import re, os.path, time
+
 from stack import Stack
 from layers import Layer
+from params import Params
+
+
+# Mount parameters
+Params.options.add_option(
+    "--no_auto_mount", "--no-auto-mount",
+    help=("don't automatically try to automount the final device; "
+          "mount must be specified explicitly"))
+
 
 class Mount(Layer):
     name = 'mount'

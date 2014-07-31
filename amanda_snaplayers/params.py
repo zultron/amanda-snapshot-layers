@@ -14,6 +14,16 @@ class Params(object):
                           'size', 'debug', 'log_to_stdout',
                           'layer_param_field_sep']
 
+    # Make this a class property so other modules can add options
+    options = OptionParser(
+        usage="usage:  %prog [execute-on]+ [options]",
+        description="Amanda backup script plugin for backing up " \
+            "volume snapshots",
+        epilog="See the README file or " \
+            "https://github.com/zultron/amanda-snapshot-layers " \
+            "for more information"
+        )
+
     def __init__(self,
                  set_up_entry_points,
                  tear_down_entry_points):
@@ -22,7 +32,6 @@ class Params(object):
         self.tear_down_entry_points = tear_down_entry_points
 
         # basic command line option parsing and sanity checks
-        self.usage = "usage:  %prog [execute-on]+ [options]"
         self.parse_options()
         self.check_args()
         self.check_required_params()
@@ -34,48 +43,45 @@ class Params(object):
 
 
     def parse_options(self):
-        parser = OptionParser(usage=self.usage)
-
         # custom properties
-        parser.add_option("--stale_seconds", "--stale-seconds", type="int",
-                          help=("number of seconds before a snapshot is "
-                                "considered stale"))
-        parser.add_option("--mount_base", "--mount-base",
-                          help=("base directory to mount snapshot"))
-        parser.add_option("--no_auto_mount", "--no-auto-monut",
-                          help=("don't automatically try to automount the "
-                                "final device; mount must be specified "
-                                "explicitly"))
-        parser.add_option("--size",
-                          help=("size of snapshot; see lvcreate(8) for units"))
-        parser.add_option("--debug", type="int",
-                          help=("Print debug output; param is 0 or 1"))
-        parser.add_option("--log_to_stdout", "--log-to-stdout",
-                          action="store_true", default=False,
-                          help=("output to stdout for debugging"))
-        parser.add_option("--layer_param_field_sep", "--layer-param-field-sep",
-                          default=',=+',
-                          help=("separator charactors for "
-                                "layers, params and fields (default ',=+')"))
+        self.options.add_option(
+            "--mount_base", "--mount-base",
+            help=("base directory to mount snapshot"))
+        self.options.add_option(
+            "--debug", type="int",
+            help=("Print debug output; param is 0 or 1"))
+        self.options.add_option(
+            "--log_to_stdout", "--log-to-stdout",
+            action="store_true", default=False,
+            help=("output to stdout for debugging"))
+        self.options.add_option(
+            "--layer_param_field_sep", "--layer-param-field-sep",
+            default=',=+',
+            help=("separator charactors for layers, params and fields "
+                  "(default ',=+')"))
 
         # standard properties
-        parser.add_option("--device",
-                          help=("mount directory with embedded device layering "
-                                "scheme: <mount_base>/"
-                                "(lvm=<vg+lv>|raid1|part=<part#>)[,<...>]/"))
-        parser.add_option("--config",
-                          help="amanda configuration")
-        parser.add_option("--host",
-                          help="client host")
-        parser.add_option("--disk",
-                          help="disk to back up")
-        parser.add_option("--level", type="int",
-                          help="dump level")
-        parser.add_option("--execute_where", "--execute-where",
-                          help="where this script is executed")
+        self.options.add_option(
+            "--device",
+            help=("mount directory with embedded device layering scheme: "
+                  "<mount_base>/(lvm=<vg+lv>|raid1|part=<part#>)[,<...>]/"))
+        self.options.add_option(
+            "--config",
+            help="amanda configuration")
+        self.options.add_option(
+            "--host",
+            help="client host")
+        self.options.add_option(
+            "--disk",
+            help="disk to back up")
+        self.options.add_option(
+            "--level", type="int",
+            help="dump level")
+        self.options.add_option(
+            "--execute_where", "--execute-where",
+            help="where this script is executed")
 
-        (self.params, self.args) = parser.parse_args()
-        self.parser = parser
+        (self.params, self.args) = self.options.parse_args()
 
         # link params into this object for convenience
         for p in self.all_params:
@@ -87,19 +93,19 @@ class Params(object):
 
     def check_args(self):
         if len(self.args) != 1:
-            self.parser.error("must have exactly one arg; found %d" %
-                              len(self.args))
+            self.options.error("must have exactly one arg; found %d" %
+                               len(self.args))
 
     def check_required_params(self):
         for param in self.required_params:
             if not getattr(self.params, param):
-                self.parser.error("Required parameter '%s' missing" % param)
+                self.options.error("Required parameter '%s' missing" % param)
 
     def check_device_param(self):
         if not self.device.startswith(
             self.params.mount_base + "/"):
-            self.parser.error("device path must begin with "
-                              "the base mount directory")
+            self.options.error("device path must begin with "
+                               "the base mount directory")
 
     def print_params(self):
         self.util.infomsg("\nCommand line argument parsing results:")

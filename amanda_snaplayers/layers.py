@@ -5,6 +5,17 @@ from datetime import datetime, timedelta
 from pprint import pformat
 
 from util import Util
+from params import Params
+
+
+# Snapshot parameters
+Params.options.add_option(
+    "--stale_seconds", "--stale-seconds", type="int",
+    help=("number of seconds before a snapshot is considered stale"))
+Params.options.add_option(
+    "--size",
+    help=("size of snapshot; see lvcreate(8) for units"))
+
 
 
 class Snapdb(dict):
@@ -58,9 +69,7 @@ class Snapdb(dict):
            
 
 class Layer(Util):
-    class_params = {
-        'snapdb' : None,
-        }
+    class_params = {}
 
     def __init__(self, arg_str, params, parent_layer):
 
@@ -70,12 +79,6 @@ class Layer(Util):
         self.arg_str = arg_str
         self.params = params
         self.parent = parent_layer
-
-    @property
-    def snapdb(self):
-        if self.class_params['snapdb'] is None:
-            self.class_params['snapdb'] = Snapdb(debug = self.debug)
-        return self.class_params['snapdb']
 
     @property
     def parent_device(self):
@@ -101,12 +104,17 @@ class Layer(Util):
         self.error("class %s does not implement safe_setup method" %
                        self.__class__.__name__)
 
+
 class Snapper(Layer):
     lvcreate = '/usr/sbin/lvcreate'
     lvremove = '/usr/sbin/lvremove'
     lvdisplay = '/usr/sbin/lvdisplay'
     snap_suffix = '.amsnap'
     name = 'lvm'
+
+    class_params = {
+        'snapdb' : None,
+        }
 
     def print_info(self):
         self.infomsg("Initialized LVM snapshot object parameters:")
@@ -115,6 +123,12 @@ class Snapper(Layer):
         self.infomsg("    stale seconds = %d" % self.stale_seconds)
         self.infomsg("    snapshot size = %s" % self.size)
 
+
+    @property
+    def snapdb(self):
+        if self.class_params['snapdb'] is None:
+            self.class_params['snapdb'] = Snapdb(debug = self.debug)
+        return self.class_params['snapdb']
 
     @property
     def stale_seconds(self):
