@@ -67,4 +67,5 @@ class XenVDISnapper(Snapper):
     
 
 # Register this layer
-Stack.register_layer('xenvdi',XenVDISnapper)
+if have_xenserver:
+    Stack.register_layer('xenvdi',XenVDISnapper)
