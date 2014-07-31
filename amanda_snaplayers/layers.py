@@ -23,6 +23,12 @@ Params.add_option(
     help=("location of snaplayers state file"))
 
 
+def _unimplemented(method):
+    def unimpl_cb(self,*args,**kwargs):
+        self.error("class %s does not implement %s method" %
+                   (self.__class__.__name__, method))
+    return unimpl_cb
+
 
 class Snapdb(dict):
     '''
@@ -97,17 +103,153 @@ class Layer(Util):
                        self.__class__.__name__)
         return self.parent.is_stale
     
+    is_setup = _unimplemented('is_setup')
+    safe_teardown = _unimplemented('safe_teardown')
+    safe_setup = _unimplemented('safe_setup')
+
+
+class SnapLayer(Layer):
+    
+    name = None
+    class_params = {
+        'snapdb' : None,
+        }
+
+    # These functions must be implemented
+    device = _unimplemented('device')
+    orig_device = _unimplemented('orig_device')
+    snap_exists = _unimplemented('snap_exists')
+    orig_exists = _unimplemented('orig_exists')
+    is_snapshot = _unimplemented('is_snapshot')
+    matches_target = _unimplemented('matches_target')
+    create_snapshot = _unimplemented('create_snapshot')
+    remove_snapshot = _unimplemented('remove_snapshot')
+
+
+    def print_info(self):
+        if self.name is None:
+            self.error("Class 'name' attribute not defined for class %s" %
+                       self.__class__.__name__)
+        self.infomsg("Initialized layer %s snapshot object parameters:" % \
+                         self.name)
+        self.infomsg("    target device = %s" % self.orig_device)
+        self.infomsg("    snapshot device = %s" % self.device)
+        self.infomsg("    stale seconds = %d" % self.stale_seconds)
+        self.infomsg("    snapshot size = %s" % self.size)
+
+
+    @property
+    def snapdb(self):
+        if self.class_params['snapdb'] is None:
+            self.class_params['snapdb'] = \
+                Snapdb(debug = self.debug,
+                       state_file = self.params.state_file)
+        return self.class_params['snapdb']
+
+    @property
+    def stale_seconds(self):
+        return self.params.stale_seconds
+
+    @property
+    def size(self):
+        return self.params.size
+
+    @property
+    def is_stale(self, nodefault=False):
+        return self.snapdb.is_expired(self.device, self.stale_seconds)
+
+    @property
+    def in_snapdb(self):
+        return self.snapdb.is_expired(self.device,
+                                      self.stale_seconds,
+                                      nodefault=True) is not None
+
     @property
     def is_setup(self):
-        self.error("class %s does not implement is_setup method" %
-                       self.__class__.__name__)
-    
+        # no sanity checks here, just if the snap exists or not;
+        # good enough to know if tearing down is needed
+        return self.snap_exists
+
+    def safe_set_up(self):
+
+        self.infomsg("Setting up snapshot")
+        not_exist=False
+
+        # sanity check:  the original disk should exist
+        if not self.orig_exists:
+            self.error("target device does not exist:  %s" %
+                       self.orig_device)
+        self.debugmsg("  Sanity check passed:  target device exists")
+
+        if self.snap_exists:
+            # Existing snapshots need sanity and staleness checks
+            self.infomsg("Found existing snapshot %s" % self.device)
+
+            # sanity check:  existing snapshot's origin must be target device
+            if not self.matches_target:
+                self.error("Existing snapshot's origin is not target device; "
+                           "aborting")
+            self.debugmsg("  Sanity check passed:  "
+                          "snapshot's origin matches target")
+
+            # sanity check:  existing snapshots must be in db
+            if not self.in_snapdb:
+                self.error("Existing snapshot not found in database; aborting")
+            self.debugmsg("  Sanity check passed:  snapshot found in database")
+
+            # sanity check:  snapshots should be snapshots!
+            if not self.is_snapshot:
+                self.error("Device %s is not a snapshot; aborting" %
+                           self.device)
+            self.debugmsg("  Sanity check passed:  snapshot is a snapshot device")
+
+            # remove stale snapshots
+            if self.is_stale:
+                self.infomsg("Snapshot is stale")
+                # FIXME unimplemented; for now, just abort
+                self.error("delete_snapshot() not implemented; aborting")
+                #unmount_and_remove_snapshot(util, snapper)
+        else:
+            not_exist = True
+            self.debugmsg("  Sanity check passed:  "
+                          "Snapshot does not already exist")
+
+        # Create snapshot if it doesn't exist (or was expired)
+        if not_exist or not self.snap_exists:
+            self.create_snapshot()
+            # Check one last time
+            if not self.snap_exists:
+                self.error("Failed to create snapshot; aborting")
+            # Record snapshot
+            self.snapdb.record_snap(self.device)
+
+        self.infomsg("Snapshot successfully set up\n")
+
+
     def safe_teardown(self):
-        self.error("class %s does not implement safe_teardown method" %
-                       self.__class__.__name__)
 
-    def safe_setup(self):
-        self.error("class %s does not implement safe_setup method" %
-                       self.__class__.__name__)
+        self.infomsg("Removing snapshot")
 
+        # sanity check:  snapshot should exist
+        if not self.snap_exists:
+            self.infomsg("Snapshot does not exist; not removing")
+            return
+        self.debugmsg("  Sanity check passed:  snapshot exists")
+
+        # Sanity check: check target really is a snapshot
+        if not self.is_snapshot:
+            self.error("Snapshot is not a snapshot device; aborting")
+        self.debugmsg("  Sanity check passed:  snapshot is a snapshot device")
+
+        # Remove snapshot
+        self.remove_snapshot()
+
+        # Check one last time
+        if self.snap_exists:
+            self.error("Failed to remove snapshot; aborting")
+        else:
+            self.infomsg("Successfully removed snapshot\n")
+
+        # Record removal
+        self.snapdb.delete_snap(self.device)
 

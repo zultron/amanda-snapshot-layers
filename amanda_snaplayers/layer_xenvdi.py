@@ -1,7 +1,7 @@
 # Xen VDI snapshots
 
 from stack import Stack
-from layer_lv import Snapper
+from layer_lv import LV
 
 have_xenserver = True
 try:
@@ -9,30 +9,28 @@ try:
 except:
     have_xenserver = False
 
-class XenVDISnapper(Snapper):
+class XenVDISnapLayer(LV):
     '''
     Given a VDI name-label and snapshot name, create a snapshot
 
     /v/amanda.mount/xenvdi=junction.root.0,raid1,part=1
     '''
 
+    name = 'xenvdi'
+
     def __init__(self,arg_str,params,parent_layer):
 
-        super(XenVDISnapper,self).__init__(arg_str,params,parent_layer)
+        super(XenVDISnapLayer,self).__init__(arg_str,params,parent_layer)
 
         if not have_xenserver:
-            self.error("Tried to init XenVDISnapper, but XenAPI libs "
+            self.error("Tried to init XenVDISnapLayer, but XenAPI libs "
                        "not available")
 
         self.init_xenapi_session()
 
     def print_info(self):
-        self.infomsg("Initialized Xen VDI snapshot object parameters:")
+        super(XenVDISnapLayer,self).print_info()
         self.infomsg("    VDI name-label = %s" % self.vdi_name_label)
-        self.infomsg("    target device = %s" % self.lv_device)
-        self.infomsg("    snapshot device = %s" % self.device)
-        self.infomsg("    stale seconds = %d" % self.stale_seconds)
-        self.infomsg("    snapshot size = %s" % self.size)
 
         
     def init_xenapi_session(self):
@@ -61,11 +59,11 @@ class XenVDISnapper(Snapper):
         return sr
 
     @property
-    def lv_device(self):
+    def orig_device(self):
         return '/dev/VG_XenStorage-%s/VHD-%s' % ( self.sr_record['uuid'],
                                                   self.vdi_record['uuid'] )
     
 
 # Register this layer
 if have_xenserver:
-    Stack.register_layer('xenvdi',XenVDISnapper)
+    Stack.register_layer('xenvdi',XenVDISnapLayer)
