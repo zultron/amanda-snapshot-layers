@@ -1,6 +1,6 @@
 # Utility functions
 
-import re
+import sys, re
 
 from subprocess import Popen, PIPE
 from datetime import datetime
