@@ -87,6 +87,11 @@ class Snapdb(dict):
 class Layer(Util):
     class_params = {}
 
+
+    is_setup = _unimplemented('is_setup')
+    safe_teardown = _unimplemented('safe_teardown')
+    safe_setup = _unimplemented('safe_setup')
+
     def __init__(self, arg_str, params, parent_layer):
 
         super(Layer, self).__init__(
@@ -107,10 +112,6 @@ class Layer(Util):
                        self.__class__.__name__)
         return self.parent.is_stale
     
-    is_setup = _unimplemented('is_setup')
-    safe_teardown = _unimplemented('safe_teardown')
-    safe_setup = _unimplemented('safe_setup')
-
     def device_partition(self,part_num):
         '''
         Return the device string for a partition; some layers may
@@ -256,7 +257,7 @@ class SnapLayer(Layer):
 
         # Check one last time
         if self.snap_exists:
-            self.error("Failed to remove snapshot; aborting")
+            self.error("Snapshot still exists after removal attempt; aborting")
         else:
             self.infomsg("Successfully removed snapshot\n")
 

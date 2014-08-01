@@ -48,7 +48,7 @@ class Stack(Util):
         self.is_stale = False
         self.is_setup = True
         for layer in self.layers:
-            self.debugmsg("Checking layer %s, args %s" %
+            self.debugmsg("Checking layer '%s', args '%s'" %
                           (layer.name, layer.arg_str))
             if layer.is_setup:
                 self.top_set_up_layer = layer
