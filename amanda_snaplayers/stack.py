@@ -32,7 +32,7 @@ class Stack(Util):
                 self.error("Unrecognized layer name '%s'" % layer[0])
             self.layers.append(
                 self.dispatch_hash[layer[0]](
-                (layer+[None])[1], self.params, parent_layer))
+                    (layer+[None])[1], self.params, parent_layer))
             parent_layer = self.layers[-1]
             parent_layer.print_info()
             self.infomsg('')
