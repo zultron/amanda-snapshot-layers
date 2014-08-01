@@ -3,6 +3,7 @@ from layer_xenvdi import XenVDISnapLayer
 from layer_md import MD_component_device
 from layer_mount_partition import MountPartition
 from layer_lv import LV
+from layer_rbd import RBDSnapLayer
 
 # Calling scripts use these
 from params import Params
