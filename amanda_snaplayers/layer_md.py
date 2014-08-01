@@ -171,6 +171,10 @@ class MD_component_device(Layer):
         else:
             return None
 
+    def device_partition(self,part_num):
+        # md partitions are created as e.g. /dev/md1p1
+        return '%sp%s' % (self.device,part_num)
+
     @property
     def md_device_running(self):
         return self._other_md_device_running(self.md_dev)

@@ -1,7 +1,7 @@
 # Import (and automatically register) the various supported layers
 from layer_xenvdi import XenVDISnapLayer
 from layer_md import MD_component_device
-from layer_mount import Mount
+from layer_mount_partition import MountPartition
 from layer_lv import LV
 
 # Calling scripts use these

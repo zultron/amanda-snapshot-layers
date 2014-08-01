@@ -2,7 +2,7 @@
 
 import re, os.path, time
 
-from stack import Stack
+from stack import Stack,Mount
 from layers import Layer
 from params import Params
 
@@ -14,14 +14,14 @@ Params.add_option(
           "mount must be specified explicitly"))
 
 
-class Mount(Layer):
-    name = 'mount'
+class MountPartition(Layer,Mount):
+    name = 'part'
     mount_cmd = '/bin/mount'
     umount_cmd = '/bin/umount'
 
     def __init__(self,arg_str,params,parent_layer):
 
-        super(Mount,self).__init__(arg_str,params,parent_layer)
+        super(MountPartition,self).__init__(arg_str,params,parent_layer)
 
         self.mount_db = None
 
@@ -38,14 +38,9 @@ class Mount(Layer):
 
     @property
     def parent_device(self):
-        # handle partitioned parent device
         if self.arg_str and self.arg_str != '0':
-            # if parent is RAID1, partitions will be created as e.g. /dev/md1p1
-            if isinstance(self.parent, MD_component_device):
-                return "%sp%s" % (self.parent.device, self.arg_str)
-            else:
-                self.error("Don't know how to handle supplied partition "
-                           "argument '%s'" % self.arg_str)
+            # partitioned parent device
+            return self.parent.device_partition(self.arg_str)
         else:
             return self.parent.device
 
@@ -249,4 +244,4 @@ class Mount(Layer):
 
 
 # Register this layer
-Stack.register_layer(Mount)
+Stack.register_layer(MountPartition)

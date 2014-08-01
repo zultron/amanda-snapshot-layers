@@ -111,6 +111,12 @@ class Layer(Util):
     safe_teardown = _unimplemented('safe_teardown')
     safe_setup = _unimplemented('safe_setup')
 
+    def device_partition(self,part_num):
+        '''
+        Return the device string for a partition; some layers may
+        override this
+        '''
+        return '%s%s' % (self.device,part_num)
 
 class SnapLayer(Layer):
     

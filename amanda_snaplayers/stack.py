@@ -90,3 +90,9 @@ class Stack(Util):
             layer.safe_set_up()
 
 
+class Mount(object):
+    '''
+    A Mount class object mounts a filesystem
+    '''
+
+    pass
