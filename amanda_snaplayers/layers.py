@@ -85,6 +85,7 @@ class Snapdb(dict):
            
 
 class Layer(Util):
+    params = None
     class_params = {}
 
 
