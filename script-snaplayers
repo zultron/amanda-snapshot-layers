@@ -1,25 +1,22 @@
 #!/usr/bin/python
 #
-# /path/to/script [execute-on]+ [--config <config>] [--host <host>] \
-#    [--disk <disk>] [--device <device>] [--level]* \
-#    [--PROPERTY_NAME PROPERTY_VALUE]*
+# script-snaplayers
+#
+# An Amanda script plugin to mount up filesystems buried under layers
+# of LV/RBD/XenVDI/RAID/etc. devices.
 
-# /usr/libexec/amanda/application/script_lvsnap script_lvsnap
-# PRE-DLE-AMCHECK --execute-where client --config site0-full --host
-# xen0.storage0.zultron.com --disk
-# /dev/data.00.0/norman.00.0.mail.amsnap --device
-# /dev/data.00.0/norman.00.0.mail.amsnap --stale-seconds 86400
-# --snap-suffix .amsnap
-
-# /usr/libexec/amanda/application/script_lvsnap
-# script_lvsnap POST-DLE-AMCHECK
+# (try PRE-DLE-AMCHECK as well)
+# /usr/libexec/amanda/application/script-snaplayers POST-DLE-AMCHECK
 # --execute-where client
 # --config site0-full
-# --host xen0.storage0.zultron.com
-# --disk /dev/data.00.0/norman.00.0.mail.amsnap
-# --device /dev/data.00.0/norman.00.0.mail.amsnap
+# --host `hostname`
+# --disk amanda0.root.img
+# --device /mnt/amanda/rbd=rbd+amanda0.root.img,part=2
 # --stale-seconds 86400
-# --snap-suffix .amsnap
+# --snap-suffix amsnap
+# --mount-base=/mnt/amanda
+# --size 10240
+# --debug=1
 
 import sys, os.path
 
