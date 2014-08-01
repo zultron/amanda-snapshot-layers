@@ -10,6 +10,31 @@ class Stack(Util):
     def register_layer(my_class,layer_class):
         my_class.dispatch_hash[layer_class.name] = layer_class
 
+    def insert_layer(self,name,args):
+        # Look up layer class
+        layer_class = self.dispatch_hash.get(name,None)
+        if layer_class is None:
+            self.error("Unrecognized layer name '%s'" % name)
+
+        # Insert parent layers, if applicable
+        if hasattr(layer_class, 'insert_parent'):
+            self.insert_layer(layer_class.insert_parent, args)
+
+        # Determine parent layer
+        if self.layers:
+            parent_layer = self.layers[-1]
+        else:
+            parent_layer = None
+
+        # Instantiate layer and put on stack
+        layer = layer_class(args, self.params, parent_layer)
+        self.layers.append(layer)
+
+        # Print info
+        layer.print_info()
+        self.infomsg('')
+
+
     def __init__(self,params,debug=None):
         # set up utils; we expect logging to already be set up from 'params'
         super(Stack, self).__init__(debug=params.debug)
@@ -25,17 +50,11 @@ class Stack(Util):
         # after a check(), this will be the top layer found to be set up
         self.top_set_up_layer = None
 
+        # build layer stack
         self.layers = []
-        parent_layer = None
         for layer in params.scheme:
-            if not self.dispatch_hash.has_key(layer[0]):
-                self.error("Unrecognized layer name '%s'" % layer[0])
-            self.layers.append(
-                self.dispatch_hash[layer[0]](
-                    (layer+[None])[1], self.params, parent_layer))
-            parent_layer = self.layers[-1]
-            parent_layer.print_info()
-            self.infomsg('')
+            (layer_name,layer_args) = (layer+[None])[0:2]
+            self.insert_layer(layer_name, layer_args)
 
         # if top isn't a Mount object, add one, assuming an unpartitioned
         # block device with a mountable filesystem
