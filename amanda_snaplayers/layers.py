@@ -103,6 +103,14 @@ class Layer(Util):
         self.parent = parent_layer
 
     @property
+    def args(self):
+        '''
+        Return the layer arg_str, like rbd+amanda0.root.img.new, split
+        into a list by the '+' character
+        '''
+        return self.arg_str.split(self.params.field_sep)
+
+    @property
     def parent_device(self):
         return self.parent.device
 
