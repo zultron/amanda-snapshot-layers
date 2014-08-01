@@ -27,13 +27,6 @@ Params.add_option(
     help=("snapshot suffix"))
 
 
-def _unimplemented(method):
-    def unimpl_cb(self,*args,**kwargs):
-        self.error("class %s does not implement %s method" %
-                   (self.__class__.__name__, method))
-    return unimpl_cb
-
-
 class Snapdb(dict):
     '''
     pickled dict of snapshot creation timestamps persisted to a file
@@ -88,11 +81,6 @@ class Layer(Util):
     params = None
     class_params = {}
 
-
-    is_setup = _unimplemented('is_setup')
-    safe_teardown = _unimplemented('safe_teardown')
-    safe_setup = _unimplemented('safe_setup')
-
     def __init__(self, arg_str, params, parent_layer):
 
         super(Layer, self).__init__(
@@ -134,16 +122,6 @@ class SnapLayer(Layer):
     class_params = {
         'snapdb' : None,
         }
-
-    # These functions must be implemented
-    device = _unimplemented('device')
-    orig_device = _unimplemented('orig_device')
-    snap_exists = _unimplemented('snap_exists')
-    orig_exists = _unimplemented('orig_exists')
-    is_snapshot = _unimplemented('is_snapshot')
-    matches_target = _unimplemented('matches_target')
-    create_snapshot = _unimplemented('create_snapshot')
-    remove_snapshot = _unimplemented('remove_snapshot')
 
 
     def print_info(self):
