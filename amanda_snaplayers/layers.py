@@ -163,7 +163,7 @@ class SnapLayer(Layer):
         if self.class_params['snapdb'] is None:
             self.class_params['snapdb'] = \
                 Snapdb(debug = self.debug,
-                       state_file = self.params.state_file)
+                       state_file = self.params.snaplayers_state_file)
         return self.class_params['snapdb']
 
     @property
