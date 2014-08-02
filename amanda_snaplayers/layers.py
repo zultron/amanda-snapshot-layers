@@ -90,6 +90,9 @@ class Layer(Util):
         self.params = params
         self.parent = parent_layer
 
+    # inheriting classes must implement at least these methods:
+    # is_setup (property), safe_teardown, safe_setup
+
     @property
     def args(self):
         '''
@@ -123,6 +126,14 @@ class SnapLayer(Layer):
         'snapdb' : None,
         }
 
+    # inheriting classes must implement at least these methods:
+    #
+    # properties:
+    # device, orig_device, snap_exists, orig_exists, is_setup, is_snapshot,
+    # matches_target
+    #
+    # methods:
+    # create_snapshot, remove_snapshot
 
     def print_info(self):
         if self.name is None:
