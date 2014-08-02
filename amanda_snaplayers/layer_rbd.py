@@ -43,7 +43,6 @@ def ceph_method(func,with_image=False):
                     "      %s:  Set ceph ioctx" %
                     func.func_name)
             obj.ceph_object_counts['ioctx'] += 1
-            print "obj.ceph_object_counts['ioctx'] = %s" % obj.ceph_object_counts['ioctx']
             try:
                 if with_image:
                     if obj.ceph_object_counts['image'] == 0:
