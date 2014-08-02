@@ -181,7 +181,7 @@ class SnapLayer(Layer):
 
     def safe_set_up(self):
 
-        self.infomsg("Setting up snapshot")
+        self.infomsg("Setting up snapshot layer '%s'" % self.name)
         not_exist=False
 
         # sanity check:  the original disk should exist
@@ -237,7 +237,7 @@ class SnapLayer(Layer):
 
     def safe_teardown(self):
 
-        self.infomsg("Removing snapshot")
+        self.infomsg("Removing snapshot layer '%s'" % self.name)
 
         # sanity check:  snapshot should exist
         if not self.snap_exists:
