@@ -276,6 +276,9 @@ class RBDSnapLayer(CephSnapLayer):
     def remove_snapshot(self):
         if self._is_protected:
             self._unprotect()
+            if self._is_protected:
+                self.error("Failed to unprotect protected snapshot '%s'" %
+                           self.orig_device)
         self._remove()
         
     @property
