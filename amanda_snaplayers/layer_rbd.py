@@ -1,8 +1,5 @@
 # RBD volumes
 
-#FIXME
-from pprint import pformat
-
 import re
 
 have_rbd = True
@@ -338,7 +335,7 @@ class RBDCloneLayer(CephSnapLayer):
     Args will be [ ceph_pool, rbd_volume ]
     '''
 
-    name = 'rbd'
+    name = 'rbd_clone'
     insert_parent = 'rbd_snap'
     rbd_snap_re = re.compile(r'^[^/@]+/[^/@]+@[^/@]+$')
 
