@@ -240,6 +240,9 @@ class SnapLayer(Layer):
             # Check one last time
             if not self.snap_exists:
                 self.error("Failed to create snapshot; aborting")
+            else:
+                self.debugmsg("  Sanity check passed:  "
+                              "Snapshot successfully created")
             # Record snapshot
             self.snapdb.record_snap(self.device)
 
