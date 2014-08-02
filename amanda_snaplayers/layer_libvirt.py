@@ -201,7 +201,7 @@ class LibvirtVolLayer(SnapLayer):
             dev = self.mapped_device
             if dev is not None:
                 self._disk_device = dev
-                self.debugmsg("    Found existing VM device map to '%s'"
+                self.debugmsg("      found existing VM device map to '%s'"
                               % dev)
             else:
                 # Device pattern, e.g. 'vd%s', translating to /dev/vd?
@@ -248,7 +248,7 @@ class LibvirtVolLayer(SnapLayer):
             "    Attaching libvirt storage volume '%s' "
             "to local VM device '%s'" %
             (self.libvirt_storage_volume_name,
-             self.libvirt_vm_hostname))
+             self.device))
         try:
             res = self.libvirt_vm.attachDevice(self.libvirt_storage_volume_xml)
         except libvirt.libvirtError, e:
@@ -263,7 +263,7 @@ class LibvirtVolLayer(SnapLayer):
             "    Detaching libvirt storage volume '%s' "
             "from local VM device '%s'" %
             (self.libvirt_storage_volume_name,
-             self.libvirt_vm_hostname))
+             self.device))
         try:
             res = self.libvirt_vm.detachDevice(self.libvirt_storage_volume_xml)
         except libvirt.libvirtError, e:
