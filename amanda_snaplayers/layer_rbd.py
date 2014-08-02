@@ -94,6 +94,9 @@ class CephSnapLayer(SnapLayer):
     Common class inherited by RBDSnapLayer and RBDCloneLayer
     '''
 
+    ceph_object_counts = {'cluster':0, 'ioctx':0, 'image':0}
+    ceph_objects = {}
+
     # Methods used by the rbd_method decorator wrapper
     @property
     def cluster(self):
@@ -149,9 +152,6 @@ class RBDSnapLayer(CephSnapLayer):
     name = 'rbd_snap'
     rbd_snap_re = re.compile(r'^[^/@]+/[^/@]+@[^/@]+$')
 
-    ceph_object_counts = {'cluster':0, 'ioctx':0, 'image':0}
-    ceph_objects = {}
-
     def __init__(self, *args):
         super(RBDSnapLayer, self).__init__(*args)
 
@@ -179,24 +179,18 @@ class RBDSnapLayer(CephSnapLayer):
         return '%s/%s@%s' % \
             (self.ceph_pool, self.rbd_volume, self.snap_name)
 
+    @property
     @rbd_method
-    def _snap_exists(self):
+    def snap_exists(self):
         for s in self.image.list_snaps():
             if s['name'] == self.snap_name:
                 self.debugmsg(
-                    "    found snapshot '%s', id %s, size %s" %
+                    "      found snapshot '%s', id %s, size %s" %
                     (self.device,s['id'],s['size']))
                 return True
-        self.debugmsg("    RBD image '%s' has no snap '%s'" %
+        self.debugmsg("      RBD image '%s' has no snap '%s'" %
                       (self.orig_device, self.snap_name))
         return False
-
-    @property
-    def snap_exists(self):
-        try:
-            return self._snap_exists()
-        except rbd.ImageNotFound:
-            return False
 
     @rbd_method
     def _orig_exists(self):
@@ -243,7 +237,7 @@ class RBDSnapLayer(CephSnapLayer):
         '''
         res = self.image.is_protected_snap(self.snap_name)
         self.debugmsg(
-            "    RBD snapshot protected:  %s" % res)
+            "      RBD snapshot protected:  %s" % res)
         return res
         
     @rbd_method
@@ -292,9 +286,9 @@ class RBDSnapLayer(CephSnapLayer):
         if res:
             for c in res:
                 self.debugmsg(
-                    "    RBD snapshot child:  %s/%s" % c)
+                    "      RBD snapshot child:  %s/%s" % c)
         else:
-            self.debugmsg("    No children of RBD snapshot '%s' found" %
+            self.debugmsg("      no children of RBD snapshot '%s' found" %
                           self.device)
         return res
         
@@ -341,9 +335,6 @@ class RBDCloneLayer(CephSnapLayer):
     insert_parent = 'rbd_snap'
     rbd_snap_re = re.compile(r'^[^/@]+/[^/@]+@[^/@]+$')
 
-    ceph_object_counts = {'cluster':0, 'ioctx':0, 'image':0}
-    ceph_objects = {'cluster':0, 'ioctx':0, 'image':0}
-
     @property
     def clone_suffix(self):
         return self.params.rbd_clone_suffix
@@ -378,11 +369,11 @@ class RBDCloneLayer(CephSnapLayer):
         res = (self.ceph_pool, self.rbd_volume) in self.parent.snap_children
         if res:
             self.debugmsg(
-                "    RBD image '%s' exists (child of '%s')" %
+                "      RBD image '%s' exists (child of '%s')" %
                 (self.device, self.orig_device))
         else:
             self.debugmsg(
-                "    No RBD image '%s' exists" % self.device)
+                "      no RBD image '%s' exists" % self.device)
         return res
 
     @property
