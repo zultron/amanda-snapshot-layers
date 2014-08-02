@@ -92,7 +92,7 @@ class LibvirtVolLayer(SnapLayer):
         '''
         if not hasattr(self,'_libvirt_conn'):
             self._libvirt_conn = libvirt.open(self.qemu_url)
-            self.debugmsg("    Set up libvirt connection to '%s'" %
+            self.debugmsg("      set up libvirt connection to '%s'" %
                           self.params.qemu_url)
         return self._libvirt_conn
 
@@ -112,7 +112,7 @@ class LibvirtVolLayer(SnapLayer):
         if not hasattr(self,'_libvirt_vm'):
             self._libvirt_vm = \
                 self.libvirt_conn.lookupByName(self.libvirt_vm_hostname)
-            self.debugmsg("    Set up libvirt object for vm '%s'" %
+            self.debugmsg("      set up libvirt object for vm '%s'" %
                           self.libvirt_vm_hostname)
         return self._libvirt_vm
 
@@ -130,7 +130,7 @@ class LibvirtVolLayer(SnapLayer):
             self._libvirt_storage_pool = (
                 self.libvirt_conn.storagePoolLookupByName(
                     self.libvirt_storage_pool_name))
-            self.debugmsg("    Set up libvirt object for storage pool '%s'" %
+            self.debugmsg("      set up libvirt object for storage pool '%s'" %
                           self.libvirt_storage_pool_name)
         return self._libvirt_storage_pool
 
@@ -158,7 +158,7 @@ class LibvirtVolLayer(SnapLayer):
                            (self.libvirt_storage_volume_name,
                             self.libvirt_storage_pool_name))
             self.debugmsg(
-                "    Set up libvirt object for storage volume '%s'" %
+                "      set up libvirt object for storage volume '%s'" %
                 self.libvirt_storage_volume_name)
         return self._libvirt_storage_volume
 
@@ -219,7 +219,7 @@ class LibvirtVolLayer(SnapLayer):
                     self.error("Unable to find free disk device '%s*'" %
                                self.params.disk_device_prefix)
                 self.debugmsg(
-                        "    Selected unused VM target device '%s'" %
+                        "      selected unused VM target device '%s'" %
                         self._disk_device)
 
         return self._disk_device
