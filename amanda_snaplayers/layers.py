@@ -119,6 +119,14 @@ class Layer(Util):
         '''
         return '%s%s' % (self.device,part_num)
 
+    def freshen(self):
+        '''
+        This method is called at each major entry point into the
+        stack.  Layers may override this to call expensive freshening
+        methods just once.
+        '''
+        pass
+
 class SnapLayer(Layer):
     
     name = None
@@ -184,6 +192,9 @@ class SnapLayer(Layer):
         self.infomsg("Setting up snapshot layer '%s'" % self.name)
         not_exist=False
 
+        # freshen up the layer
+        self.freshen()
+
         # sanity check:  the original disk should exist
         if not self.orig_exists:
             self.error("target device does not exist:  %s" %
@@ -238,6 +249,9 @@ class SnapLayer(Layer):
     def safe_teardown(self):
 
         self.infomsg("Removing snapshot layer '%s'" % self.name)
+
+        # freshen up the layer
+        self.freshen()
 
         # sanity check:  snapshot should exist
         if not self.snap_exists:
