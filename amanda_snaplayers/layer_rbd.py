@@ -429,6 +429,16 @@ class RBDCloneLayer(CephSnapLayer):
                     "    No RBD snapshot lockers found")
         return res
         
+    # Set up the RBD objects once for all operations in safe_set_up
+    @ceph_method
+    def safe_set_up(self):
+        super(CephSnapLayer,self).safe_set_up()
+
+    # Set up the RBD objects once for all operations in safe_teardown
+    @ceph_method
+    def safe_teardown(self):
+        super(CephSnapLayer,self).safe_teardown()
+        
 
 # Register this layer
 if have_rbd:
