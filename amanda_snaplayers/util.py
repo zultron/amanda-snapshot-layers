@@ -10,6 +10,7 @@ class Util(object):
     sudo_fail_re = re.compile(r'sudo:.*password')
     # parameters shared across instances
     parms = { 'log' : None,
+              'log_set' : False,
               }
 
     def __init__(self, debug=False,
@@ -25,10 +26,17 @@ class Util(object):
         # be called multiple times
         
         # By default, log to stdout
-        if log_to_stdout or self.parms['log'] is None:
-            self.parms['log'] = sys.stdout;
+        if log_to_stdout:
+            # Logging explicitly set to stdout
+            self.parms['log'] = sys.stdout
+            self.parms['log_set'] = True
         elif logfile:
+            # Logging explicitly set to a file
             self.parms['log'] = open(logfile, 'w')
+            self.parms['log_set'] = True
+        elif self.parms['log'] is None:
+            # Default case:  log to stdout
+            self.parms['log'] = sys.stdout
 
     @property
     def error_prefix(self):
