@@ -4,6 +4,10 @@
 #
 # An Amanda script plugin to mount up filesystems buried under layers
 # of LV/RBD/XenVDI/RAID/etc. devices.
+#
+# This script should be copied to /usr/libexec/amanda/application
+#
+# See examples/amanda.conf for script parameters that should be set
 
 # (try PRE-DLE-AMCHECK as well)
 # /usr/libexec/amanda/application/script-snaplayers POST-DLE-AMCHECK
