@@ -15,7 +15,7 @@ Params.add_option(
     help=("number of seconds before a snapshot is considered stale"))
 Params.add_option(
     "--size",
-    required_param=True, interesting_param=True,
+    interesting_param=True,
     help=("size of snapshot; see lvcreate(8) for units"))
 Params.add_option(
     "--snaplayers_state_file", "--snaplayers-state-file",
