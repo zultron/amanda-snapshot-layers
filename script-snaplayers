@@ -15,15 +15,15 @@
 # --config site0-full
 # --host `hostname`
 # --disk amanda0.root.img
-# --device /mnt/amanda/rbd=rbd+amanda0.root.img,part=2
+# --device /d/amanda/mnt/libvirt=rbd+amanda0.root.img,part=2
 # --stale-seconds 86400
 # --snap-suffix amsnap
-# --mount-base=/mnt/amanda
+# --mount-base=/d/amanda/mnt
 # --size 10240
 # --debug=1
 # --qemu-url=qemu://host2.mgmt0.zultron.com/system
 # --libvirt-auth-file=/var/lib/amanda/libvirt-authfile
-# --amanda-vm-hostname=amanda0
+# --libvirt-vm-hostname=amanda0
 # --ceph-auth-user=admin
 # --libvirt-secret-uuid=1aeed9a1-5797-4c2d-1ef2-bdb4b7b99a28
 # --disk-device-prefix=/dev/vd
