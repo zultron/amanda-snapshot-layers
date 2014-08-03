@@ -1,6 +1,6 @@
 # RBD volumes
 
-import re
+import re,time
 
 have_rbd = True
 try:
@@ -393,16 +393,39 @@ class RBDCloneLayer(CephSnapLayer):
         self.parent.clone(self.rbd_volume)
 
     @ceph_method
-    def remove_snapshot(self):
-        # For debugging, list lockers
-        self._lockers
+    def _remove_clone(self):
+        # Internal function to remove snapshot; return True or False
         rbd_inst = rbd.RBD()
-        self.debugmsg("  Removing RBD clone '%s'" % self.rbd_volume)
         try:
             rbd_inst.remove(self.ioctx, self.rbd_volume)
+            self.debugmsg("      clone removed successfully @ %s" %
+                          self.timestr)
+            return True
         except rbd.ImageBusy:
-            self.error("Remove clone failed:  '%s' still has watchers" %
-                       self.device)
+            self.debugmsg("      watchers prevent clone removal @ %s" %
+                          self.timestr)
+            return False
+
+    def remove_snapshot(self):
+        self.debugmsg("  Removing RBD clone '%s'" % self.rbd_volume)
+        # For debugging, list lockers
+        self._lockers
+        
+        # Try to remove snapshot; if there were watchers that didn't
+        # exit gracefully, it could take 30 seconds to release the
+        # watch, so retry every 5 seconds for 30 seconds
+
+        if self._remove_clone():
+            self.debugmsg("  Clone removed successfully")
+            return
+        for t in range(0,6):
+            self.debugmsg("  Remove clone failed; retrying in 5 seconds")
+            time.sleep(5)
+            if self._remove_clone():
+                self.debugmsg("  Clone removed successfully")
+                return
+        self.error("Remove clone failed:  '%s' still has watchers" %
+                   self.device)
 
     @property
     @rbd_method

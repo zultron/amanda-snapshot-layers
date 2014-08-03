@@ -353,15 +353,24 @@ class LibvirtVolLayer(SnapLayer):
 
     def wait_attach(self,detach=False):
         '''
-        Check for disk attachment once a second up to the timeout
+        Check for disk attachment/detachment once a second up to the
+        timeout
         '''
         for t in range(0,self.params.libvirt_attach_timeout):
             if detach:
                 if not self.device_exists:
+                    self.debugmsg('      detach successful @ %s' %
+                                  self.timestr)
                     return
             else:
                 if self.device_exists:
+                    self.debugmsg('      attach successful @ %s' %
+                                  self.timestr)
                     return
+            self.debugmsg('      waiting for %s; currently %s @ %s' %
+                          (('detach','attach')[detach],
+                           ('detached','attached')[self.device_exists],
+                           self.timestr))
             time.sleep(1)
 
         self.error("Failed to attach/detach disk device '%s' "
