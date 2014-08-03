@@ -1,6 +1,6 @@
 # Utility functions
 
-import sys, re
+import sys, re, time
 
 from subprocess import Popen, PIPE
 from datetime import datetime
@@ -129,4 +129,6 @@ class Util(object):
 
         return (res,stdout,stderr)
 
-
+    @property
+    def timestr(self):
+        return time.strftime('%H:%M:%S',time.localtime())
